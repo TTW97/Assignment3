@@ -36,16 +36,16 @@ public class BaseSpell : Spell
     {
         return new Dictionary<string, int>
         {
-            { "wave",  GameManager.Instance.waveNumber },
-            { "power", GameManager.Instance.playerSpellPower }
+            //{ "wave",  GameManager.Instance.waveNumber },
+            //{ "power", GameManager.Instance.playerSpellPower }
         };
     }
 
-    public override string GetName()    => spellName;
+    //public override string GetName()    => spellName;
     public override int    GetIcon()    => iconIndex;
-    public override int    GetDamage()  => Mathf.RoundToInt(RPNEvaluator.RPNEvaluator.Evaluatef(damageExpr,   MakeVars()));
-    public override int    GetManaCost()=> Mathf.RoundToInt(RPNEvaluator.RPNEvaluator.Evaluatef(manaExpr,     MakeVars()));
-    public override float  GetCooldown()=> RPNEvaluator.RPNEvaluator.Evaluatef(cooldownExpr, MakeVars());
+    //public override int    GetDamage()  => Mathf.RoundToInt(RPNEvaluator.RPNEvaluator.Evaluatef(damageExpr,   MakeVars()));
+    //public override int    GetManaCost()=> Mathf.RoundToInt(RPNEvaluator.RPNEvaluator.Evaluatef(manaExpr,     MakeVars()));
+    //public override float  GetCooldown()=> RPNEvaluator.RPNEvaluator.Evaluatef(cooldownExpr, MakeVars());
 
     public override IEnumerator Cast(Vector3 where, Vector3 target, Hittable.Team team)
     {
