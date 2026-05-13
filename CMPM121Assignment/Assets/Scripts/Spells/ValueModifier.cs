@@ -8,7 +8,7 @@ public class ValueModifier
 
     public ValueModifier(ModType type, float value)
     {
-        this.type = type;
+        this.type  = type;
         this.value = value;
     }
 
@@ -17,7 +17,7 @@ public class ValueModifier
         float result = baseValue;
         foreach (var mod in modifiers)
         {
-            if (mod.type == ModType.ADD)      result += mod.value;
+            if (mod.type == ModType.ADD)           result += mod.value;
             else if (mod.type == ModType.MULTIPLY) result *= mod.value;
         }
         return result;

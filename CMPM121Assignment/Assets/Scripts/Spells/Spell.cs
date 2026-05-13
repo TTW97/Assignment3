@@ -3,44 +3,24 @@ using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json.Linq;
 
-public class Spell 
+public class Spell
 {
     public float last_cast;
     public SpellCaster owner;
     public Hittable.Team team;
 
-    public SpellData data;
-
-    public Spell(SpellCaster owner, SpellData data)
+    public Spell(SpellCaster owner)
     {
         this.owner = owner;
-        this.data = data;
     }
 
-    public string GetName()
-    {
-        return "Bolt";
-    }
+    public Spell(SpellCaster owner, SpellData data) : this(owner) { }
 
-    public int GetManaCost()
-    {
-        return 10;
-    }
-
-    public int GetDamage()
-    {
-        return 100;
-    }
-
-    public float GetCooldown()
-    {
-        return 0.75f;
-    }
-
-    public virtual int GetIcon()
-    {
-        return 0;
-    }
+    public virtual string GetName()     => "Bolt";
+    public virtual int    GetManaCost() => 10;
+    public virtual int    GetDamage()   => 100;
+    public virtual float  GetCooldown() => 0.75f;
+    public virtual int    GetIcon()     => 0;
 
     public bool IsReady()
     {
@@ -50,6 +30,7 @@ public class Spell
     public virtual IEnumerator Cast(Vector3 where, Vector3 target, Hittable.Team team)
     {
         this.team = team;
+        last_cast = Time.time;
         GameManager.Instance.projectileManager.CreateProjectile(0, "straight", where, target - where, 15f, OnHit);
         yield return new WaitForEndOfFrame();
     }
@@ -57,10 +38,6 @@ public class Spell
     void OnHit(Hittable other, Vector3 impact)
     {
         if (other.team != team)
-        {
             other.Damage(new Damage(GetDamage(), Damage.Type.ARCANE));
-        }
-
     }
-
 }

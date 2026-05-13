@@ -1,9 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
-using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System.IO;
 using System.Collections.Generic;
+using RPNEvaluator;
 
 public class PlayerController : MonoBehaviour
 {
@@ -15,11 +13,8 @@ public class PlayerController : MonoBehaviour
     public SpellUI spellui;
 
     public int speed;
-
     public Unit unit;
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
         unit = GetComponent<Unit>();
@@ -30,42 +25,56 @@ public class PlayerController : MonoBehaviour
     {
         spellcaster = new SpellCaster(125, 8, Hittable.Team.PLAYER);
         StartCoroutine(spellcaster.ManaRegeneration());
-        
+
         hp = new Hittable(100, Hittable.Team.PLAYER, gameObject);
         hp.OnDeath += Die;
         hp.team = Hittable.Team.PLAYER;
 
-        // tell UI elements what to show
         healthui.SetHealth(hp);
         manaui.SetSpellCaster(spellcaster);
         spellui.SetSpell(spellcaster.spell);
     }
 
-    // Update is called once per frame
-    void Update()
+    public void OnWaveEnd(int wave)
     {
-        
+        var vars = new Dictionary<string, int> { { "wave", wave } };
+
+        int newMaxHp   = RPNEvaluator.RPNEvaluator.Evaluate("95 wave 5 * +",  vars);
+        int newMana    = RPNEvaluator.RPNEvaluator.Evaluate("90 wave 10 * +", vars);
+        int newManaReg = RPNEvaluator.RPNEvaluator.Evaluate("10 wave +",      vars);
+        int newPower   = RPNEvaluator.RPNEvaluator.Evaluate("wave 10 *",      vars);
+
+        hp.SetMaxHP(newMaxHp);
+        spellcaster.max_mana = newMana;
+        spellcaster.mana_reg = newManaReg;
+        GameManager.Instance.playerSpellPower = newPower;
+        speed = 5;
     }
+
+    void Update() { }
 
     void OnAttack(InputValue value)
     {
-        if (GameManager.Instance.state == GameManager.GameState.PREGAME || GameManager.Instance.state == GameManager.GameState.GAMEOVER) return;
+        if (GameManager.Instance.state == GameManager.GameState.PREGAME ||
+            GameManager.Instance.state == GameManager.GameState.GAMEOVER) return;
+
         Vector2 mouseScreen = Mouse.current.position.value;
-        Vector3 mouseWorld = Camera.main.ScreenToWorldPoint(mouseScreen);
+        Vector3 mouseWorld  = Camera.main.ScreenToWorldPoint(mouseScreen);
         mouseWorld.z = 0;
         StartCoroutine(spellcaster.Cast(transform.position, mouseWorld));
     }
 
     void OnMove(InputValue value)
     {
-        if (GameManager.Instance.state == GameManager.GameState.PREGAME || GameManager.Instance.state == GameManager.GameState.GAMEOVER) return;
-        unit.movement = value.Get<Vector2>()*speed;
+        if (GameManager.Instance.state == GameManager.GameState.PREGAME ||
+            GameManager.Instance.state == GameManager.GameState.GAMEOVER) return;
+        unit.movement = value.Get<Vector2>() * speed;
     }
 
     void Die()
     {
         Debug.Log("You Lost");
         GameManager.Instance.state = GameManager.GameState.GAMEOVER;
+        FindFirstObjectByType<EnemySpawner>()?.OnPlayerDied();
     }
-
 }

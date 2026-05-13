@@ -1,55 +1,109 @@
 using UnityEngine;
-using System.IO;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
 using System.Collections.Generic;
+using RPNEvaluator;
 
-
-public class SpellBuilder 
+public class SpellBuilder
 {
-    private Dictionary<string, SpellData> spellDatabase;
+    private static JObject spellsJson;
 
-    public SpellBuilder()
+    static SpellBuilder()
     {
-        LoadSpellDatabase();
+        TextAsset ta = Resources.Load<TextAsset>("spells");
+        if (ta == null) { Debug.LogError("Could not find spells.json"); return; }
+        spellsJson = JObject.Parse(ta.text);
     }
 
-    private void LoadSpellDatabase()
-    {
-        TextAsset jsonFile = Resources.Load<TextAsset>("spells");
-
-        if (jsonFile == null)
-        {
-            Debug.LogError("Could not find spells.json in Assets/Resources.");
-            spellDatabase = new Dictionary<string, SpellData>();
-            return;
-        }
-
-        spellDatabase = JsonConvert.DeserializeObject<Dictionary<string, SpellData>>(jsonFile.text);
-
-        Debug.Log("Loaded " + spellDatabase.Count + " spells.");
-
-        foreach (var pair in spellDatabase)
-        {
-            Debug.Log(pair.Key + " -> " + pair.Value.name);
-        }
-    }
-
-    public SpellData GetSpellData(string id)
-    {
-        if (spellDatabase.ContainsKey(id))
-        {
-            return spellDatabase[id];
-        }
-
-        Debug.LogWarning("Spell not found: " + id);
-        return null;
-    }
+    public SpellBuilder() { }
 
     public Spell Build(SpellCaster owner)
     {
-        SpellData data = GetSpellData("arcane_bolt");
-        return new Spell(owner, data);
+        return BuildBase("arcane_bolt", owner);
     }
 
+    public Spell BuildBase(string key, SpellCaster owner)
+    {
+        if (spellsJson == null || !spellsJson.ContainsKey(key))
+        {
+            Debug.LogWarning("Spell key not found: " + key);
+            return new Spell(owner);
+        }
+
+        JObject def = (JObject)spellsJson[key];
+
+        string name     = def["name"]?.ToString()          ?? key;
+        int    icon     = def["icon"]?.Value<int>()        ?? 0;
+        string mana     = def["mana_cost"]?.ToString()     ?? "10";
+        string cooldown = def["cooldown"]?.ToString()      ?? "2";
+
+        JObject dmgObj  = def["damage"] as JObject;
+        string  damage  = dmgObj?["amount"]?.ToString()   ?? "10";
+        string  dmgType = dmgObj?["type"]?.ToString()     ?? "arcane";
+
+        JObject proj    = def["projectile"] as JObject;
+        string  speed   = proj?["speed"]?.ToString()      ?? "8";
+        string  traj    = proj?["trajectory"]?.ToString() ?? "straight";
+        int     sprite  = proj?["sprite"]?.Value<int>()   ?? 0;
+
+        return new BaseSpell(owner, name, icon, damage, dmgType, mana, cooldown, speed, traj, sprite);
+    }
+
+    public Spell BuildRandom(SpellCaster owner)
+    {
+        Spell spell = BuildBase("arcane_bolt", owner);
+
+        List<string> modKeys = new List<string>
+            { "damage_amp", "speed_amp", "doubler", "splitter", "chaos", "homing" };
+
+        while (Random.value < 0.6f)
+        {
+            string mod = modKeys[Random.Range(0, modKeys.Count)];
+            spell = ApplyModifier(mod, spell);
+        }
+        return spell;
+    }
+
+    public Spell ApplyModifier(string key, Spell inner)
+    {
+        if (spellsJson == null || !spellsJson.ContainsKey(key)) return inner;
+
+        JObject def  = (JObject)spellsJson[key];
+        var     vars = MakeVars();
+
+        switch (key)
+        {
+            case "damage_amp":
+                return new DamageAmpSpell(inner,
+                    Eval(def["damage_multiplier"], vars, 1.5f),
+                    Eval(def["mana_multiplier"],   vars, 1.5f));
+
+            case "speed_amp":
+                return new SpeedAmpSpell(inner,
+                    Eval(def["speed_multiplier"], vars, 1.75f));
+
+            case "homing":
+                return new HomingSpell(inner,
+                    Eval(def["damage_multiplier"], vars, 0.75f),
+                    Mathf.RoundToInt(Eval(def["mana_adder"], vars, 10f)));
+
+            default:
+                return inner;
+        }
+    }
+
+    Dictionary<string, int> MakeVars()
+    {
+        return new Dictionary<string, int>
+        {
+            { "wave",  GameManager.Instance.waveNumber },
+            { "power", GameManager.Instance.playerSpellPower }
+        };
+    }
+
+    float Eval(JToken token, Dictionary<string, int> vars, float fallback)
+    {
+        if (token == null) return fallback;
+        try { return RPNEvaluator.RPNEvaluator.Evaluatef(token.ToString(), vars); }
+        catch { return fallback; }
+    }
 }
