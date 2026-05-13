@@ -9,9 +9,12 @@ public class Spell
     public SpellCaster owner;
     public Hittable.Team team;
 
-    public Spell(SpellCaster owner)
+    public SpellData data;
+
+    public Spell(SpellCaster owner, SpellData data)
     {
         this.owner = owner;
+        this.data = data;
     }
 
     public string GetName()
