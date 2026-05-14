@@ -59,11 +59,12 @@ public class SpellBuilder
         Spell spell = BuildBase("arcane_bolt", owner);
 
         List<string> modKeys = new List<string>
-            { "damage_amp", "speed_amp", "doubler", "splitter", "chaos", "homing", "chaos_trail" };
+            { "damage_amp", "speed_amp", "doubler", "splitter", "chaos", "homing", "chaos_trail", "poison", "frost"};
 
         Debug.Log("RandomBuild");
 
         int count = 0;
+        // This is too unpredictable, at least in my play test --Cliff
         while (Random.value < 0.6f)
         {
             Debug.Log("in while");
@@ -131,6 +132,11 @@ public class SpellBuilder
                     Eval(def["trail_lifetime"], vars, 2f)
                 );
 
+            case "poison":
+                return new PoisonSpell(inner);
+
+            case "frost":
+                return new FrostSpell(inner);
 
             default:
                 return inner;

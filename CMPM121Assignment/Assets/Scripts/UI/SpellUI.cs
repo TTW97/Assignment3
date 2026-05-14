@@ -62,4 +62,31 @@ public class SpellUI : MonoBehaviour
         }
         cooldown.SetSizeWithCurrentAnchors(RectTransform.Axis.Horizontal, 48 * perc);
     }
+
+
+    public void DropSpell()
+    {
+        PlayerController player = FindFirstObjectByType<PlayerController>();
+
+        if (player == null) return;
+
+        if (slotIndex >= player.spellcaster.spells.Count) return;
+
+        Debug.Log(
+            "Dropped spell: " +
+            player.spellcaster.spells[slotIndex].GetName()
+        );
+
+        player.spellcaster.spells.RemoveAt(slotIndex);
+
+        if (player.spellcaster.selectedSpellIndex >=
+            player.spellcaster.spells.Count)
+        {
+            player.spellcaster.selectedSpellIndex =
+                Mathf.Max(0,
+                player.spellcaster.spells.Count - 1);
+        }
+
+        player.spellui.Refresh();
+    }
 }

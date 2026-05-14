@@ -118,6 +118,14 @@
     "cooldown_multiplier": "1.25",
     "spacing": "0.2",
     "trail_lifetime": "1.6"
+  },
+  "poison": {
+    "name": "poison",
+    "description": "Projectile poisons enemies and deals damage over time."
+  },
+  "frost": {
+    "name": "frost",
+    "description": "Projectile slows enemies and deals reduced damage."
   }
 
 }

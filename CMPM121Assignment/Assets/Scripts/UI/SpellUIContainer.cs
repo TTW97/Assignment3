@@ -30,8 +30,9 @@ public class SpellUIContainer : MonoBehaviour
                 ui.slotIndex = i;
                 ui.SetSpell(player.spellcaster.spells[i]);
 
-                if (ui.highlight != null)
-                    ui.highlight.SetActive(i == player.spellcaster.selectedSpellIndex);
+                if (ui.highlight != null) ui.highlight.SetActive(i == player.spellcaster.selectedSpellIndex);
+
+                if (ui.dropbutton != null) ui.dropbutton.SetActive(player.spellcaster.spells.Count >= 4);
             }
             else
             {
