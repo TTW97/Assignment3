@@ -10,7 +10,8 @@ public class PlayerController : MonoBehaviour
     public ManaBar manaui;
 
     public SpellCaster spellcaster;
-    public SpellUI spellui;
+    //public SpellUI spellui;
+    public SpellUIContainer spellui;
 
     public int speed;
     public Unit unit;
@@ -32,7 +33,8 @@ public class PlayerController : MonoBehaviour
 
         healthui.SetHealth(hp);
         manaui.SetSpellCaster(spellcaster);
-        spellui.SetSpell(spellcaster.spell);
+        //spellui.SetSpell(spellcaster.spells);
+        spellui.Refresh();
     }
 
     public void OnWaveEnd(int wave)
@@ -51,7 +53,14 @@ public class PlayerController : MonoBehaviour
         speed = 5;
     }
 
-    void Update() { }
+    void Update() {
+        if (spellcaster == null) return;
+
+        if (Keyboard.current.digit1Key.wasPressedThisFrame) SelectSpell(0);
+        if (Keyboard.current.digit2Key.wasPressedThisFrame) SelectSpell(1);
+        if (Keyboard.current.digit3Key.wasPressedThisFrame) SelectSpell(2);
+        if (Keyboard.current.digit4Key.wasPressedThisFrame) SelectSpell(3);
+    }
 
     void OnAttack(InputValue value)
     {
@@ -76,5 +85,13 @@ public class PlayerController : MonoBehaviour
         Debug.Log("You Lost");
         GameManager.Instance.state = GameManager.GameState.GAMEOVER;
         FindFirstObjectByType<EnemySpawner>()?.OnPlayerDied();
+    }
+
+    void SelectSpell(int index)
+    {
+        if (index < 0 || index >= spellcaster.spells.Count) return;
+
+        spellcaster.selectedSpellIndex = index;
+        spellui.Refresh();
     }
 }

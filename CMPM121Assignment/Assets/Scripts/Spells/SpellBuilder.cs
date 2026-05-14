@@ -18,13 +18,13 @@ public class SpellBuilder
 
     public Spell Build(SpellCaster owner)
     {
-        //return BuildBase("arcane_bolt", owner);
+        return BuildBase("arcane_bolt", owner);
 
-        Spell spell = BuildBase("arcane_bolt", owner);
+        //Spell spell = BuildBase("arcane_bolt", owner);
 
-        spell = ApplyModifier("chaos_trail", spell);
+        //spell = ApplyModifier("chaos_trail", spell);
 
-        return spell;
+        //return spell;
     }
 
     public Spell BuildBase(string key, SpellCaster owner)
@@ -61,10 +61,19 @@ public class SpellBuilder
         List<string> modKeys = new List<string>
             { "damage_amp", "speed_amp", "doubler", "splitter", "chaos", "homing", "chaos_trail" };
 
+        Debug.Log("RandomBuild");
+
+        int count = 0;
         while (Random.value < 0.6f)
         {
+            Debug.Log("in while");
             string mod = modKeys[Random.Range(0, modKeys.Count)];
             spell = ApplyModifier(mod, spell);
+            ++count;
+            if(count == 5)
+            {
+                break;
+            }
         }
         return spell;
     }

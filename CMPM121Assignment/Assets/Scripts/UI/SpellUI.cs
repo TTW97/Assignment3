@@ -14,6 +14,8 @@ public class SpellUI : MonoBehaviour
     const float UPDATE_DELAY = 1;
     public GameObject dropbutton;
 
+    public int slotIndex;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -24,6 +26,17 @@ public class SpellUI : MonoBehaviour
     {
         this.spell = spell;
         GameManager.Instance.spellIconManager.PlaceSprite(spell.GetIcon(), icon.GetComponent<Image>());
+    }
+
+    public void ClickSelectSpell()
+    {
+        PlayerController player = FindFirstObjectByType<PlayerController>();
+
+        if (player == null || player.spellcaster == null) return;
+        if (slotIndex >= player.spellcaster.spells.Count) return;
+
+        player.spellcaster.selectedSpellIndex = slotIndex;
+        player.spellui.Refresh();
     }
 
     // Update is called once per frame
