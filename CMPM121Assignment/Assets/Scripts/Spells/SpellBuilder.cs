@@ -18,7 +18,13 @@ public class SpellBuilder
 
     public Spell Build(SpellCaster owner)
     {
-        return BuildBase("arcane_bolt", owner);
+        //return BuildBase("arcane_bolt", owner);
+
+        Spell spell = BuildBase("arcane_bolt", owner);
+
+        spell = ApplyModifier("chaos_trail", spell);
+
+        return spell;
     }
 
     public Spell BuildBase(string key, SpellCaster owner)
@@ -53,7 +59,7 @@ public class SpellBuilder
         Spell spell = BuildBase("arcane_bolt", owner);
 
         List<string> modKeys = new List<string>
-            { "damage_amp", "speed_amp", "doubler", "splitter", "chaos", "homing" };
+            { "damage_amp", "speed_amp", "doubler", "splitter", "chaos", "homing", "chaos_trail" };
 
         while (Random.value < 0.6f)
         {
@@ -85,6 +91,37 @@ public class SpellBuilder
                 return new HomingSpell(inner,
                     Eval(def["damage_multiplier"], vars, 0.75f),
                     Mathf.RoundToInt(Eval(def["mana_adder"], vars, 10f)));
+
+            case "doubler":
+                return new DoublerSpell(
+                    inner,
+                    Eval(def["delay"], vars, 0.5f),
+                    Eval(def["mana_multiplier"], vars, 1.5f),
+                    Eval(def["cooldown_multiplier"], vars, 1.5f)
+                );
+
+            case "splitter":
+                return new SplitterSpell(
+                    inner,
+                    Eval(def["angle"], vars, 10f),
+                    Eval(def["mana_multiplier"], vars, 1.5f)
+                );
+
+            case "chaos":
+                return new ChaosSpell(
+                    inner,
+                    Eval(def["damage_multiplier"], vars, 1.5f)
+                );
+
+            case "chaos_trail":
+                return new ChaosTrailSpell(
+                    inner,
+                    Eval(def["mana_multiplier"], vars, 1.6f),
+                    Eval(def["cooldown_multiplier"], vars, 1.25f),
+                    Eval(def["spacing"], vars, 1f),
+                    Eval(def["trail_lifetime"], vars, 2f)
+                );
+
 
             default:
                 return inner;

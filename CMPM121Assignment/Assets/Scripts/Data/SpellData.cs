@@ -38,6 +38,11 @@ public class SpellData
     public string delay;
     public string angle;
     public string projectile_trajectory;
+
+
+    // Chaos trail
+    public string spacing;
+    public string trail_lifetime;
 }
 
 [Serializable]
